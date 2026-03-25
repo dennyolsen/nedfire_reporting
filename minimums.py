@@ -2,6 +2,7 @@ import pandas as pd
 
 training_csv = './exports/2025TrainingHoursperPersonnelbyCategoryYTD_20260324214142.csv'
 standby_csv = './exports/2026SchedulingbyAssignment-PublicView_20260311191908.csv'
+incidents_csv = './exports/2026IncidentsbyPersonnel_20260311191904.csv'
 
 # Training Hours Sum
 
@@ -33,11 +34,22 @@ df_standby = df_standby.drop(index="Total", axis=0)
 
 # Incidents Sum
 
+# Open File
+df_incidents = pd.read_csv(incidents_csv, header=None, index_col=0)
+# Rename Columns
+df_incidents.index.name = 'Name'
+df_incidents = df_incidents.rename(columns={1: 'Incidents'})
+# Drop department total
+df_incidents = df_incidents.drop(index="Total", axis=0)
+for i in df_incidents.index:
+    print("HELLO")
 
-# Print statements
-print(df_training)
-print(df_standby)
+#Combine
 
 df_combined = df_training.join(df_standby, how='right')
+df_combined = df_combined.fillna(0)
 
+print(df_incidents)
 print(df_combined)
+
+df_combined.to_csv('exports/output.csv')
