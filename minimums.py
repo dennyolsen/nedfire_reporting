@@ -3,6 +3,11 @@ import pandas as pd
 training_csv = './exports/2025TrainingHoursperPersonnelbyCategoryYTD_20260324214142.csv'
 standby_csv = './exports/2026SchedulingbyAssignment-PublicView_20260311191908.csv'
 incidents_csv = './exports/2026IncidentsbyPersonnel_20260311191904.csv'
+drop_names = ["Total, Total", "Schmidtmann, Charlie", "Biscardi, Alec", "Joslin, Andrew", "Moran, Conor", "Wheelock, Glen", "Henrikson, Rik"]
+calls = input("Calls YTD:")
+minimum = int(calls) / 10
+
+print("Call Credits Minimum: " + str(minimum))
 
 # Training Hours Sum
 
@@ -50,14 +55,15 @@ df_incidents['Name'] = df_incidents[0].str.split().apply(lambda x: f"{x[-1]}, {x
 df_incidents = df_incidents.set_index('Name')
 df_incidents = df_incidents.drop(df_incidents.columns[0], axis=1)
 df_incidents = df_incidents.rename(columns={1: 'Incidents'})
-print(df_incidents)
 
 #Combine
 
 df_combined = df_training.join(df_standby, how='right')
 df_combined = df_combined.join(df_incidents, how='right')
 df_combined = df_combined.fillna(0)
-df_combined = df_combined.drop('Total, Total')
+df_combined['Total_Response_Credits'] = df_combined['Shift_Credits'] + df_combined['Incidents']
+for name in drop_names:
+    df_combined = df_combined.drop(name)
 
 print(df_combined)
 
