@@ -1,10 +1,12 @@
 import pandas as pd
 from datetime import date, datetime
 
-training_csv = './exports/2025TrainingHoursperPersonnelbyCategoryYTD_20260331194156.csv'
+training_csv = './exports/2025TrainingHoursperPersonnelbyCategoryYTD_20260331194156.csv' #New
 standby_csv = './exports/2026SchedulingbyAssignment-PublicView_20260331194151.csv' #New
 incidents_csv = './exports/IncidentsbyPersonnel-PublicView_20260331194218.csv' #New
-drop_names = ["Total, Total", "Schmidtmann, Charlie", "Biscardi, Alec", "Joslin, Andrew", "Moran, Conor", "Wheelock, Glen", "Henrikson, Rik", "Faes, Nick", "(NULL), (NULL)"]
+drop_names = [
+    "Total, Total", "Schmidtmann, Charlie", "Biscardi, Alec", "Joslin, Andrew", "Moran, Conor", "Wheelock, Glen", "Henrikson, Rik",
+    "Faes, Nick", "(NULL), (NULL)", "Blumen, Jason", "Lucas, Eric"]
 calls = input("Calls YTD:")
 minimum = int(calls) / 10
 
@@ -17,7 +19,7 @@ today = date.today()
 new_year = date(today.year, 1, 1)
 delta = today - new_year
 days_elapsed = delta.days
-print("Days elapsed: " + str(days_elapsed))
+print("Days elapsed YTD: " + str(days_elapsed))
 
 # Training Hours Sum
 
@@ -39,12 +41,11 @@ df_training.rename(index={'Gude, Margaret Grace':'Gude, Margaret'},inplace=True)
 
 # Standby Hours Sum
 
-# Open File
+# Open file
 df_standby = pd.read_csv(standby_csv, usecols=['Last, First','Response Credits for Stand-By Hours'])
-
-# Rename Columns
-
+# Rename columns
 df_standby = df_standby.rename(columns={'Response Credits for Stand-By Hours': 'Shift_Credits', 'Last, First': 'Name'})
+# Set index
 df_standby = df_standby.set_index('Name')
 # Drop department total
 df_standby = df_standby.drop(index="Total", axis=0)
@@ -52,35 +53,35 @@ df_standby = df_standby.drop(index="Total", axis=0)
 # Incidents Sum
 
 # Open File
-# This line ingests and sets index to name column
-# df_incidents = pd.read_csv(incidents_csv, header=None, index_col=0)
 df_incidents = pd.read_csv(incidents_csv, usecols=['Personnel Name', "Total Responses"])
-
-
-
-# Rename Columns
-# df_incidents.index.name = 'Name'
-# df_incidents = df_incidents.rename(columns={1: 'Incidents'})
-# Drop department total
-# df_incidents = df_incidents.drop(index="Total", axis=0)
-
-# print(df_incidents[0])
+# Convert name to last, first
 df_incidents['Name'] = df_incidents['Personnel Name'].str.split().apply(lambda x: f"{x[-1]}, {x[0]}")
+# Set inxex
 df_incidents = df_incidents.set_index('Name')
+# Drop old name
 df_incidents = df_incidents.drop('Personnel Name', axis=1)
+# Fix column name
 df_incidents = df_incidents.rename(columns={'Total Responses': 'Incidents'})
 
 #Combine
 
-df_combined = df_training.join(df_standby, how='right')
-df_combined = df_combined.join(df_incidents, how='right')
+# Combine various dataframes
+df_combined = pd.merge(df_training, df_standby, on='Name', how='outer')
+df_combined = pd.merge(df_combined, df_incidents, on='Name', how='outer')
+# Convert null values to 0
 df_combined = df_combined.fillna(0)
+# Total response credits math
 df_combined['Total_Response_Credits'] = df_combined['Shift_Credits'] + df_combined['Incidents']
-df_combined['Response_Score'] = df_combined['Total_Response_Credits'] / minimum
-df_combined['Training_Score'] = df_combined['Training_Hours_Total'] / (64 * (days_elapsed / 365))
+# Response score math, based on YTD calls at beginning of execution
+df_combined['Response_Score'] = round(df_combined['Total_Response_Credits'] / minimum, 2)
+# Training score math, based on days elapsed YTD and 64 hour annual minimum
+df_combined['Training_Score'] = round(df_combined['Training_Hours_Total'] / (64 * (days_elapsed / 365)), 2)
+# Drop miscellaneous officers, chief PRNs, null values from reporting
 for name in drop_names:
     df_combined = df_combined.drop(name)
 
+# Print results
 print(df_combined)
 
+# Save to csv
 df_combined.to_csv(f'output/output_{timestamp}.csv')
