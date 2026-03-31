@@ -1,3 +1,5 @@
 Mar 31 2026:
 
-Reduce significant digits in reporting, maybe convert to percentage
+Smarter ingest of data files (filenames are hardcoded currently)
+
+Automate data file download
