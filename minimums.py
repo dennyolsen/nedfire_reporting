@@ -35,21 +35,29 @@ df_standby = df_standby.drop(index="Total", axis=0)
 # Incidents Sum
 
 # Open File
-df_incidents = pd.read_csv(incidents_csv, header=None, index_col=0)
+# This line ingests and sets index to name column
+# df_incidents = pd.read_csv(incidents_csv, header=None, index_col=0)
+df_incidents = pd.read_csv(incidents_csv, header=None)
+
 # Rename Columns
-df_incidents.index.name = 'Name'
-df_incidents = df_incidents.rename(columns={1: 'Incidents'})
+# df_incidents.index.name = 'Name'
+# df_incidents = df_incidents.rename(columns={1: 'Incidents'})
 # Drop department total
-df_incidents = df_incidents.drop(index="Total", axis=0)
-for i in df_incidents.index:
-    print("HELLO")
+# df_incidents = df_incidents.drop(index="Total", axis=0)
+
+# print(df_incidents[0])
+df_incidents['Name'] = df_incidents[0].str.split().apply(lambda x: f"{x[-1]}, {x[0]}")
+df_incidents = df_incidents.set_index('Name')
+df_incidents = df_incidents.drop(df_incidents.columns[0], axis=1)
+df_incidents = df_incidents.rename(columns={1: 'Incidents'})
+print(df_incidents)
 
 #Combine
 
 df_combined = df_training.join(df_standby, how='right')
+df_combined = df_combined.join(df_incidents, how='right')
 df_combined = df_combined.fillna(0)
 
-print(df_incidents)
 print(df_combined)
 
 df_combined.to_csv('exports/output.csv')
