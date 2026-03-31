@@ -57,6 +57,7 @@ print(df_incidents)
 df_combined = df_training.join(df_standby, how='right')
 df_combined = df_combined.join(df_incidents, how='right')
 df_combined = df_combined.fillna(0)
+df_combined = df_combined.drop('Total, Total')
 
 print(df_combined)
 
