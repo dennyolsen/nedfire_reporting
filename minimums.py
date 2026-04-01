@@ -1,12 +1,24 @@
 import pandas as pd
 from datetime import date, datetime
+from definitions import sort_files
 
-training_csv = './exports/2025TrainingHoursperPersonnelbyCategoryYTD_20260331194156.csv' #New
-standby_csv = './exports/2026SchedulingbyAssignment-PublicView_20260331194151.csv' #New
-incidents_csv = './exports/IncidentsbyPersonnel-PublicView_20260331194218.csv' #New
+working_dir = "./exports/"
+files = sort_files(working_dir)
+
+training_csv = files["Training"][0]
+print("Training hours file: " + training_csv)
+standby_csv = files["Scheduling"][0]
+print("Shift hours file: " + standby_csv)
+incidents_csv = files["Incidents"][0]
+print("Response totals file: " + incidents_csv)
+
+# Restrict roster to volunteer FFs
 drop_names = [
-    "Total, Total", "Schmidtmann, Charlie", "Biscardi, Alec", "Joslin, Andrew", "Moran, Conor", "Wheelock, Glen", "Henrikson, Rik",
-    "Faes, Nick", "(NULL), (NULL)", "Blumen, Jason", "Lucas, Eric"]
+    "Total, Total", "Schmidtmann, Charlie", "Biscardi, Alec", "Joslin, Andrew",
+    "Moran, Conor", "Wheelock, Glen", "Henrikson, Rik", "Faes, Nick",
+    "(NULL), (NULL)", "Blumen, Jason", "Lucas, Eric", "Snyder, Sherry"]
+
+# Input number of calls YTD and calculate minimum at 10% of that
 calls = input("Calls YTD:")
 minimum = int(calls) / 10
 
@@ -20,6 +32,9 @@ new_year = date(today.year, 1, 1)
 delta = today - new_year
 days_elapsed = delta.days
 print("Days elapsed YTD: " + str(days_elapsed))
+
+# Note that scores above 1 are passing
+print("***Note that scores >1 indicate minimum fulfillment***")
 
 # Training Hours Sum
 
