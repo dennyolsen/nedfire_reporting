@@ -1,9 +1,34 @@
 import pandas as pd
 from datetime import date, datetime
 from definitions import sort_files
+import os
+import glob
 
-working_dir = "./exports/"
-files = sort_files(working_dir)
+directory =  os.path.join(".", "exports")
+
+# This function finds files in the specified directory
+
+def sort_files(directory):
+    sched_files = glob.glob(os.path.join(directory, "*SchedulingbyAssignment*.csv"))
+    if len(sched_files) != 1:
+        print("Please check export directory")
+        exit
+    incidents_files = glob.glob(os.path.join(directory, "*IncidentsbyPersonnel*.csv"))
+    if len(incidents_files) != 1:
+        print("Please check export directory")
+        exit
+    # training_files = glob.glob("./exports/*TrainingHours*.csv")
+    training_files = glob.glob(os.path.join(directory, "*TrainingHours*.csv"))
+    if len(training_files) != 1:
+        print("Please check export directory")
+        exit
+    file_dict = {
+        "Scheduling" : sched_files, "Incidents" : incidents_files,
+        "Training" : training_files}
+    return file_dict
+
+
+files = sort_files(directory)
 
 training_csv = files["Training"][0]
 print("Training hours file: " + training_csv)
@@ -99,4 +124,4 @@ for name in drop_names:
 print(df_combined)
 
 # Save to csv
-df_combined.to_csv(f'output/output_{timestamp}.csv')
+df_combined.to_csv(os.path.join(".", "output", "NFPD_FF_Minimums_Report_" + timestamp + ".csv"))
