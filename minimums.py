@@ -1,6 +1,5 @@
 import pandas as pd
 from datetime import date, datetime
-from definitions import sort_files
 import os
 import glob
 
